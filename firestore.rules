@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 사용자 문서에 대한 규칙
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId || isAdmin();
+    }
+
+    // consulting_credits 컬렉션 규칙
+    match /consulting_credits/{userId} {
+      allow read, write: if request.auth.uid == userId || isAdmin();
+    }
+
+    // sales 컬렉션 규칙 (관리자만 접근 가능)
+    match /sales/{saleId} {
+      allow read, write: if isAdmin();
+    }
+
+    // products 컬렉션 규칙 (관리자만 접근 가능)
+    match /products/{productId} {
+      allow read, write: if isAdmin();
+    }
+
+    // consulting_sessions 컬렉션 규칙 (사용자 및 관리자 접근 가능)
+    match /consulting_sessions/{sessionId} {
+      allow read, write: if request.auth.uid == resource.data.userId || isAdmin();
+    }
+
+    // cs_logs 컬렉션 규칙 (사용자 및 관리자 접근 가능)
+    match /cs_logs/{logId} {
+      allow read, write: if request.auth.uid == resource.data.userId || isAdmin();
+    }
+
+    // 관리자 권한 확인 함수
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+  }
+}
